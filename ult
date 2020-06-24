@@ -1,0 +1,111 @@
+warning: LF will be replaced by CRLF in app/Models/Model.php.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in app/Services/CategoryService.php.
+The file will have its original line endings in your working directory
+[1mdiff --git a/app/Models/Model.php b/app/Models/Model.php[m
+[1mindex c052018..63e0de4 100644[m
+[1m--- a/app/Models/Model.php[m
+[1m+++ b/app/Models/Model.php[m
+[36m@@ -9,30 +9,20 @@[m [mclass Model extends BaseModel[m
+     public $error_msg = 'error';[m
+     public $success_msg = 'success';[m
+ [m
+[32m+[m[32m    /**[m
+[32m+[m[32m     * 设置id倒叙[m
+[32m+[m[32m     */[m
+     public function scopeRecent($query)[m
+     {[m
+         return $query->orderBy('id', 'desc');[m
+     }[m
+ [m
+[31m-    public function scopeOrdered($query)[m
+[31m-    {[m
+[31m-        return $query->orderBy('sort', 'desc');[m
+[31m-    }[m
+[31m-[m
+     /**[m
+[31m-     *  二维转一维[m
+[32m+[m[32m     * 设置排序 倒叙[m
+      */[m
+[31m-    public static  function getarray($arr)[m
+[32m+[m[32m    public function scopeOrdered($query)[m
+     {[m
+[31m-        static $res_arr = array();[m
+[31m-        foreach ($arr as $key => $val) {[m
+[31m-            if (is_array($val)) {[m
+[31m-                self::getarray($val);[m
+[31m-            } else {[m
+[31m-                $res_arr[] = $val;[m
+[31m-            }[m
+[31m-        }[m
+[31m-        return $res_arr;[m
+[32m+[m[32m        return $query->orderBy('sort', 'desc');[m
+     }[m
+ [m
+     public static function boot()[m
+[1mdiff --git a/app/Services/CategoryService.php b/app/Services/CategoryService.php[m
+[1mindex e302fdc..90ff676 100644[m
+[1m--- a/app/Services/CategoryService.php[m
+[1m+++ b/app/Services/CategoryService.php[m
+[36m@@ -4,7 +4,7 @@[m [mnamespace App\Services;[m
+ [m
+ use App\Models\Category;[m
+ [m
+[31m-class CategoryService[m
+[32m+[m[32mclass CategoryService extends BaseService[m
+ {[m
+     /**[m
+      * 格式化分类[m
+[36m@@ -21,15 +21,25 @@[m [mclass CategoryService[m
+         }[m
+ [m
+         return $allCategories[m
+[31m-            ->where('pid', $parentId)[m
+[32m+[m[32m            ->where('parent_id', $parentId)[m
+             ->map(function (Category $category) use ($allCategories) {[m
+[31m-                $data = ['id' => $category->id, 'name' => $category->name, 'pid' => $category->pid, 'level' => $category->level, 'code' => $category->code, 'path' => $category->path];[m
+[31m-                if (!$category->is_directory) {[m
+[31m-                    return $data;[m
+[31m-                }[m
+[31m-                $data['children'] = $this->getCategoryTree($category->id, $allCategories);[m
+[32m+[m[32m                $data = [[m
+[32m+[m[32m                'id'        => $category->id,[m
+[32m+[m[32m                'name'      => $category->name,[m
+[32m+[m[32m                'parent_id' => $category->parent_id,[m
+[32m+[m[32m                'level'     => $category->level,[m
+[32m+[m[32m                'code'      => $category->code,[m
+[32m+[m[32m                'path'      => $category->path[m
+[32m+[m[32m            ];[m
+[32m+[m
+[32m+[m[32m            if (!$category->is_directory) {[m
+                 return $data;[m
+[31m-            });[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            $data['children'] = $this->getCategoryTree($category->id, $allCategories);[m
+[32m+[m
+[32m+[m[32m            return $data;[m
+[32m+[m[32m        });[m
+     }[m
+ [m
+ [m
+[36m@@ -44,9 +54,11 @@[m [mclass CategoryService[m
+     {[m
+         if (!$category->parent_id) {[m
+             $category->level = 0;[m
+[32m+[m
+             $category->path  = '0' . '-';[m
+         } else {[m
+             $category->level = $category->parent->level + 1;[m
+[32m+[m
+             $category->path  = $category->parent->path . $category->parent_id . '-';[m
+         }[m
+     }[m
+[36m@@ -63,6 +75,7 @@[m [mclass CategoryService[m
+         if (empty($category->parent_id)) {[m
+             $category->parent_id = 0;[m
+         }[m
+[32m+[m
+         if (empty($category->sort)) {[m
+             $category->sort = 0;[m
+         }[m
