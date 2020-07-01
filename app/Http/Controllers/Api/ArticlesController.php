@@ -29,9 +29,9 @@ class ArticlesController extends Controller
         }
 
         $articles = $query
-            ->select('id', 'article_name', 'code', 'file_url', 'Keywords', 'describe', 'content', 'status', 'hot', 'top', 'cate_id', 'user_id')
+            ->select($this->fieldset())
             ->orderBy('id', 'desc')
-            ->paginate();
+            ->paginate(config('setting.pagelist.page_index'));
 
         return ArticleResource::collection($articles);
     }
@@ -49,8 +49,8 @@ class ArticlesController extends Controller
     public function userIndex(User $user, ArticleQuery $query)
     {
         $topics = $query->where('user_id', $user->id)
-            ->select('id', 'article_name', 'code', 'file_url', 'Keywords', 'describe', 'content', 'status', 'hot', 'top', 'cate_id', 'user_id')
-            ->paginate();
+            ->select($this->fieldset())
+            ->paginate(config('setting.pagelist.page_index'));
 
         return ArticleResource::collection($topics);
     }
@@ -67,7 +67,7 @@ class ArticlesController extends Controller
     public function show($articleId, ArticleQuery $query)
     {
         $article = $query
-            ->select('id', 'article_name', 'code', 'file_url', 'Keywords', 'describe', 'content', 'status', 'hot', 'top', 'cate_id', 'user_id')
+            ->select($this->fieldset())
             ->findOrFail($articleId);
 
         return new ArticleResource($article);
@@ -140,7 +140,7 @@ class ArticlesController extends Controller
      *
      * @return array
      */
-    public function searchArticle(ArticleQuery $query,Request $request)
+    public function searchArticle(ArticleQuery $query, Request $request)
     {
         if ($search = $request->input('keywords', '')) {
             $like = '%' . $search . '%';
@@ -151,9 +151,24 @@ class ArticlesController extends Controller
         }
 
         $articles = $query
-            ->select('id', 'article_name', 'code', 'file_url', 'Keywords', 'describe', 'content', 'status', 'hot', 'top', 'cate_id', 'user_id')
-            ->paginate();
+            ->select($this->fieldset())
+            ->get();
 
         return ArticleResource::collection($articles);
+    }
+
+    /**
+     * ---------------------------------------------------------------
+     * 查询字段
+     * ---------------------------------------------------------------
+     *
+     * @return array
+     */
+    private function fieldset()
+    {
+        $field = [
+            'id', 'article_name', 'code', 'file_url', 'Keywords', 'describe', 'content', 'status', 'hot', 'top', 'cate_id', 'user_id'
+        ];
+        return $field;
     }
 }

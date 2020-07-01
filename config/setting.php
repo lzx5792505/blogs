@@ -28,4 +28,11 @@ return [
         //作用域
         'scope'        => 0
     ],
+
+    /*
+     * 分页
+     */
+    'pagelist' => [
+        'page_index'     =>  6,
+    ],
 ];
